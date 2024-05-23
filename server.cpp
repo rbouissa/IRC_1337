@@ -74,6 +74,7 @@ void Server::ReceiveNewData()
 	char buff[1024]; 
     //clear the buffer
 	memset(buff, 0, sizeof(buff)); 
+    std::cout<<"---->"<<fd_Server<<std::endl;
 	ssize_t bytes = recv(fd_Server, buff, sizeof(buff) - 1 , 0); 
     //if the client disconnected
 	if(bytes <= 0){ 
@@ -95,31 +96,32 @@ int Server::be_ready_for_connection()
     struct pollfd NewPoll;
     add.sin_family=AF_INET;
     //this->port= 4444;
-   // std::cout<<this->port<<std::endl;
+   // std::cout<<this->port<<std::eninedl;
     add.sin_port=htons(this->port);
+   // add.sin_addr.s_addr=inet_addr("localhost");
     //creating sockets 
     
-   int fd = socket(AF_INET,SOCK_STREAM,0);
-   if(fd==-1)
+   this->fd_Server = socket(AF_INET,SOCK_STREAM,0);
+   if(fd_Server==-1)
     throw(std::runtime_error("failed to create socket"));
 
     //active non_blocking socket
     int en =1;
-    if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1) //-> set the socket option (SO_REUSEADDR) to reuse the address
+    if(setsockopt(fd_Server, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1) //-> set the socket option (SO_REUSEADDR) to reuse the address
         throw(std::runtime_error("faild to set option (SO_REUSEADDR) on socket"));
-    if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
+    if (fcntl(fd_Server, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
         throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
       // Bind socket to address and port
-    if (bind(fd, (struct sockaddr *)&add, sizeof(add)) < 0) {
+    if (bind(fd_Server, (struct sockaddr *)&add, sizeof(add)) < 0) {
         std::cerr << "Bind failed" << std::endl;
         return 1;
     }   
     // Listen for incoming connections
-    if (listen(fd, SOMAXCONN) == -1) {
+    if (listen(fd_Server, SOMAXCONN) == -1) {
         std::cerr << "Listen failed" << std::endl;
         return 1;
     }
-    NewPoll.fd = fd; //-> add the server socket to the pollfd
+    NewPoll.fd = fd_Server; //-> add the server socket to the pollfd
     NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
     NewPoll.revents = 0; //-> set the revents to 0
     fds.push_back(NewPoll); //-> add the server socket to the pollfd
@@ -139,8 +141,9 @@ int Server::be_ready_for_connection()
                     AcceptNewConnetinClient();
                 }
                 else{
-                     std::cout<<"receive a new data from a registred client"<<std::endl;
+                     
                     ReceiveNewData();
+                    //std::cout<<"receive a new data from a registred client"<<std::endl;
                 }
             }
         }
