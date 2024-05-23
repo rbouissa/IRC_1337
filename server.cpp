@@ -12,7 +12,6 @@ class Client{
     int fd;
     std::string ip_add;
     public:
-        Client();
         int getFd()
         {
             return fd;
@@ -32,6 +31,7 @@ class Server{
     private:
     std::vector<Client> clients;
     int port;
+    std::string pass;
     int fd_Server;
     //static bool signal;
     std::vector<struct pollfd>fds;
@@ -43,6 +43,25 @@ class Server{
     void AcceptNewConnetinClient();
     void ClearClients(int fd);
 };
+
+void Server::AcceptNewConnetinClient(){
+    Client new_client;
+    struct sockaddr_in client_add;
+    struct pollfd clientPoll;
+    socklen_t length = sizeof(client_add);
+    int accept_cl = accept(fd_Server,(sockaddr *)&(client_add),&length);
+     if (accept_cl == -1)
+  {std::cout << "client cannot connect" << std::endl; return;}
+    clientPoll.fd=accept_cl;
+    clientPoll.events=POLLIN;
+    clientPoll.revents=0;
+    new_client.SetFd(accept_cl); //-> set the client file descriptor
+ new_client.SetIppAdd(inet_ntoa((client_add.sin_addr))); //-> convert the ip address to string and set it
+ clients.push_back(new_client); //-> add the client to the vector of clients
+ fds.push_back(clientPoll); //-> add the client socket to the pollfd
+
+ std::cout <<"client connected seccefully" << std::endl;
+ }
 
 int Server::be_ready_for_connection()
 {
@@ -90,10 +109,10 @@ int Server::be_ready_for_connection()
                 if(fds[i].fd == fd_Server)
                 {
                     std::cout<<"accepting new client"<<std::endl;
-                    //AcceptNewClient();
+                    AcceptNewConnetinClient();
                 }
                 else{
-                    std::cout<<"reicinvind a new data from a registred client";
+                    // std::cout<<"receive a new data from a registred client"<<std::endl;
                     //ReceiveNewData();
                 }
             }
@@ -103,9 +122,7 @@ int Server::be_ready_for_connection()
 }
 
 
- void Server::AcceptNewConnetinClient(){
-    
- }
+
 
 
 
@@ -135,5 +152,7 @@ void Server::ClearClients(int fd){ //-> clear the clients
 }
 int main()
 {
-
+    
+    Server s;
+    s.be_ready_for_connection();
 }
