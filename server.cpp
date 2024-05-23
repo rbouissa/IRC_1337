@@ -45,7 +45,7 @@ class Server{
         }
     int be_ready_for_connection();
     void AcceptNewConnetinClient();
-    void ReceiveNewData();
+    void ReceiveNewData(int fd);
     void ClearClients(int fd);
 };
 
@@ -68,19 +68,23 @@ void Server::AcceptNewConnetinClient(){
  std::cout <<"client connected seccefully" << std::endl;
  }
 
-void Server::ReceiveNewData()
+void Server::ReceiveNewData(int fd)
 {
     //this is the buff thata we wiil store our data received in
 	char buff[1024]; 
+    Client c;
+
     //clear the buffer
 	memset(buff, 0, sizeof(buff)); 
-    std::cout<<"---->"<<fd_Server<<std::endl;
-	ssize_t bytes = recv(fd_Server, buff, sizeof(buff) - 1 , 0); 
+    std::cout<<"---->"<<fd<<std::endl;
+	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); 
+    std::cout<<"---->"<<bytes<<std::endl;
+    //exit(1);
     //if the client disconnected
 	if(bytes <= 0){ 
-		std::cout  << "Client <" << fd_Server << "> Disconnected" << std::endl;
-		ClearClients(fd_Server); 
-		close(fd_Server); 
+		std::cout  << "Client <" << fd << "> Disconnected" << std::endl;
+	
+		close(fd);
 	}
 //if not print the data received
 	else{ 
@@ -102,30 +106,30 @@ int Server::be_ready_for_connection()
     //creating sockets 
     
    this->fd_Server = socket(AF_INET,SOCK_STREAM,0);
-   if(fd_Server==-1)
+   if( this->fd_Server==-1)
     throw(std::runtime_error("failed to create socket"));
 
     //active non_blocking socket
     int en =1;
-    if(setsockopt(fd_Server, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1) //-> set the socket option (SO_REUSEADDR) to reuse the address
+    if(setsockopt( this->fd_Server, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1) //-> set the socket option (SO_REUSEADDR) to reuse the address
         throw(std::runtime_error("faild to set option (SO_REUSEADDR) on socket"));
-    if (fcntl(fd_Server, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
+    if (fcntl( this->fd_Server, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
         throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
       // Bind socket to address and port
-    if (bind(fd_Server, (struct sockaddr *)&add, sizeof(add)) < 0) {
+    if (bind( this->fd_Server, (struct sockaddr *)&add, sizeof(add)) < 0) {
         std::cerr << "Bind failed" << std::endl;
         return 1;
     }   
     // Listen for incoming connections
-    if (listen(fd_Server, SOMAXCONN) == -1) {
+    if (listen( this->fd_Server, SOMAXCONN) == -1) {
         std::cerr << "Listen failed" << std::endl;
         return 1;
     }
-    NewPoll.fd = fd_Server; //-> add the server socket to the pollfd
+    NewPoll.fd =  this->fd_Server; //-> add the server socket to the pollfd
     NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
     NewPoll.revents = 0; //-> set the revents to 0
     fds.push_back(NewPoll); //-> add the server socket to the pollfd
-    std::cout<<"server"<<fd_Server<<" connected and ready for receiving data"<<std::endl;
+    std::cout<<"server"<< this->fd_Server<<" connected and ready for receiving data"<<std::endl;
     std::cout<<"Waiting to accept conection"<<std::endl;
     while(1)
     {
@@ -135,20 +139,20 @@ int Server::be_ready_for_connection()
         {
             if(fds[i].revents & POLLIN)
             {
-                if(fds[i].fd == fd_Server)
+                if(fds[i].fd ==  this->fd_Server)
                 {
                     std::cout<<"accepting new client"<<std::endl;
                     AcceptNewConnetinClient();
                 }
                 else{
                      
-                    ReceiveNewData();
+                    ReceiveNewData(fds[i].fd);
                     //std::cout<<"receive a new data from a registred client"<<std::endl;
                 }
             }
         }
     }
-    close(fd_Server);
+    close( this->fd_Server);
 }
 
 
