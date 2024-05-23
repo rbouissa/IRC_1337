@@ -76,10 +76,7 @@ void Server::ReceiveNewData(int fd)
 
     //clear the buffer
 	memset(buff, 0, sizeof(buff)); 
-    std::cout<<"---->"<<fd<<std::endl;
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); 
-    std::cout<<"---->"<<bytes<<std::endl;
-    //exit(1);
     //if the client disconnected
 	if(bytes <= 0){ 
 		std::cout  << "Client <" << fd << "> Disconnected" << std::endl;
@@ -90,7 +87,6 @@ void Server::ReceiveNewData(int fd)
 	else{ 
 		buff[bytes] = '\0';
 		std::cout << "Client <" << fd_Server << "> Data: "  << buff;
-		//here you can add your code to process the received data: parse, check, authenticate, handle the command, etc...
 	}
 }
 
@@ -99,12 +95,7 @@ int Server::be_ready_for_connection()
     struct sockaddr_in add;
     struct pollfd NewPoll;
     add.sin_family=AF_INET;
-    //this->port= 4444;
-   // std::cout<<this->port<<std::eninedl;
     add.sin_port=htons(this->port);
-   // add.sin_addr.s_addr=inet_addr("localhost");
-    //creating sockets 
-    
    this->fd_Server = socket(AF_INET,SOCK_STREAM,0);
    if( this->fd_Server==-1)
     throw(std::runtime_error("failed to create socket"));
@@ -152,7 +143,7 @@ int Server::be_ready_for_connection()
             }
         }
     }
-    close( this->fd_Server);
+    close(this->fd_Server);
 }
 
 
