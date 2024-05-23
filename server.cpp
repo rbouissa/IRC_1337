@@ -7,6 +7,8 @@
 #include <unistd.h> //-> for close()
 #include <arpa/inet.h> //-> for inet_ntoa()
 #include <poll.h> //-> for poll()
+#include <cstring>//for memset
+
 
 class Client{
     int fd;
@@ -30,17 +32,20 @@ class Client{
 class Server{
     private:
     std::vector<Client> clients;
-    int port;
-    std::string pass;
+    
+    
     int fd_Server;
     //static bool signal;
     std::vector<struct pollfd>fds;
     public:
+    int port;
+    std::string pass;
         Server(){
             fd_Server = -1;
         }
     int be_ready_for_connection();
     void AcceptNewConnetinClient();
+    void ReceiveNewData();
     void ClearClients(int fd);
 };
 
@@ -63,12 +68,34 @@ void Server::AcceptNewConnetinClient(){
  std::cout <<"client connected seccefully" << std::endl;
  }
 
+void Server::ReceiveNewData()
+{
+    //this is the buff thata we wiil store our data received in
+	char buff[1024]; 
+    //clear the buffer
+	memset(buff, 0, sizeof(buff)); 
+	ssize_t bytes = recv(fd_Server, buff, sizeof(buff) - 1 , 0); 
+    //if the client disconnected
+	if(bytes <= 0){ 
+		std::cout  << "Client <" << fd_Server << "> Disconnected" << std::endl;
+		ClearClients(fd_Server); 
+		close(fd_Server); 
+	}
+//if not print the data received
+	else{ 
+		buff[bytes] = '\0';
+		std::cout << "Client <" << fd_Server << "> Data: "  << buff;
+		//here you can add your code to process the received data: parse, check, authenticate, handle the command, etc...
+	}
+}
+
 int Server::be_ready_for_connection()
 {
     struct sockaddr_in add;
     struct pollfd NewPoll;
     add.sin_family=AF_INET;
-    this->port= 4444;
+    //this->port= 4444;
+   // std::cout<<this->port<<std::endl;
     add.sin_port=htons(this->port);
     //creating sockets 
     
@@ -112,8 +139,8 @@ int Server::be_ready_for_connection()
                     AcceptNewConnetinClient();
                 }
                 else{
-                    // std::cout<<"receive a new data from a registred client"<<std::endl;
-                    //ReceiveNewData();
+                     std::cout<<"receive a new data from a registred client"<<std::endl;
+                    ReceiveNewData();
                 }
             }
         }
@@ -150,9 +177,16 @@ void Server::ClearClients(int fd){ //-> clear the clients
  }
 
 }
-int main()
+int main(int ac,char **av)
 {
+    if(ac!=3)
+    {
+        std::cout<<"invalide arguments";
+        return 0;
+    }
     
     Server s;
+    s.port=atoi(av[1]);
+    s.pass=av[2];
     s.be_ready_for_connection();
 }
