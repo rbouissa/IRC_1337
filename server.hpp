@@ -12,6 +12,7 @@
 #include <cstring>//for memset
 #include<sstream>
 #include"client.hpp"
+#include <cstdlib>
 
 
 class Server{

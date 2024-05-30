@@ -2,7 +2,8 @@ CXX = c++
 CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -g
 RM		= rm -f
 NAME	= IRCSERVER
-SRC		= server.cpp\
+SRC		= autentification.cpp startConnection.cpp main.cpp\
+
 
 OBJ	= $(SRC:.cpp=.o)
 
