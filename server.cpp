@@ -8,11 +8,15 @@
 #include <arpa/inet.h> //-> for inet_ntoa()
 #include <poll.h> //-> for poll()
 #include <cstring>//for memset
+#include<sstream>
 
 
 class Client{
     int fd;
     std::string ip_add;
+    std::string Nickname;
+    std::string Username;
+    std::string Password;
     public:
         int getFd()
         {
@@ -27,6 +31,13 @@ class Client{
             ip_add = ip;
 
         }
+       
+    std::string getNickname() { return Nickname; }
+    void setNickname(std::string nick) { Nickname = nick; }
+    std::string getUsername() { return Username; }
+    void setUsername(std::string user) { Username = user; }
+    std::string getPassword() { return Password; }
+    void setPassword(std::string pass) { Password = pass; }
 };
 
 class Server{
@@ -47,7 +58,66 @@ class Server{
     void AcceptNewConnetinClient();
     void ReceiveNewData(int fd);
     void ClearClients(int fd);
+    void sendToClient(int fd, const std::string& message);
+    void parseClientInput(int fd, const std::string& data);
 };
+
+void Server::sendToClient(int fd, const std::string& message) {
+    send(fd, message.c_str(), message.size(), 0);
+}
+
+void Server::parseClientInput(int fd, const std::string& data) {
+    std::istringstream stream(data);
+    std::string line;
+    while (std::getline(stream, line)) {
+        std::istringstream linestream(line);
+        std::string command;
+        linestream >> command;
+
+        if (command == "PASS") {
+            std::string pass;
+            linestream >> pass;
+
+            // Find the client and set the password
+            for (auto& client : clients) {
+                if (client.getFd() == fd) {
+                    client.setPassword(pass);
+                    std::cout<<"our password "<<pass<<std::endl;
+                    break;
+                }
+            }
+        } else if (command == "NICK") {
+            std::string nick;
+            linestream >> nick;
+
+            // Find the client and set the nickname
+            for (auto& client : clients) {
+                if (client.getFd() == fd) {
+                    client.setNickname(nick);
+                    std::cout<<"our Nickname "<<nick<<std::endl;
+                    break;
+                }
+            }
+        } else if (command == "USER") {
+            std::string user, mode, unused, realname;
+            linestream >> user >> mode >> unused;
+            std::getline(linestream, realname);
+            if (!realname.empty() && realname[0] == ':') {
+                realname = realname.substr(1); // Remove the leading colon
+            }
+
+            // Find the client and set the username and realname
+            for (auto& client : clients) {
+                if (client.getFd() == fd) {
+                    client.setUsername(user);
+                    std::cout<<"our Username "<<user<<std::endl;
+                   // client.setRealname(realname);
+                    break;
+                }
+            }
+        }
+    }
+}
 
 void Server::AcceptNewConnetinClient(){
     Client new_client;
@@ -66,6 +136,16 @@ void Server::AcceptNewConnetinClient(){
  fds.push_back(clientPoll); //-> add the client socket to the pollfd
 
  std::cout <<"client connected seccefully" << std::endl;
+ // Send IRC welcome messages
+    std::string welcomeMsg = ":myserver 001 " + std::string(inet_ntoa(client_add.sin_addr)) + " :Welcome to the IRC server\r\n";
+    std::string yourHostMsg = ":myserver 002 " + std::string(inet_ntoa(client_add.sin_addr)) + " :Your host is myserver\r\n";
+    std::string createdMsg = ":myserver 003 " + std::string(inet_ntoa(client_add.sin_addr)) + " :This server was created just now\r\n";
+    std::string myInfoMsg = ":myserver 004 " + std::string(inet_ntoa(client_add.sin_addr)) + " myserver v1.0 i\r\n";
+
+    sendToClient(accept_cl, welcomeMsg);
+    sendToClient(accept_cl, yourHostMsg);
+    sendToClient(accept_cl, createdMsg);
+    sendToClient(accept_cl, myInfoMsg);
  }
 
 void Server::ReceiveNewData(int fd)
@@ -86,6 +166,9 @@ void Server::ReceiveNewData(int fd)
 //if not print the data received
 	else{ 
 		buff[bytes] = '\0';
+        std::string data(buff);
+        parseClientInput(fd, data);
+
 		std::cout << "Client <" << fd_Server << "> Data: "  << buff;
 	}
 }
