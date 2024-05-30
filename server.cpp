@@ -9,67 +9,11 @@
 #include <poll.h> //-> for poll()
 #include <cstring>//for memset
 #include<sstream>
+#include"server.hpp"
+#include <cstdlib>
 
 
-class Client{
-    int fd;
-    std::string ip_add;
-    std::string Nickname;
-    std::string Username;
-    std::string Password;
-      bool hasPassword;
-    bool hasNickname;
-    bool hasUsername;
-    public:
-        int getFd()
-        {
-            return fd;
-        };
-        void SetFd(int Fd)
-        {
-            fd = Fd;
-        }
-        void SetIppAdd(std::string ip)
-        {
-            ip_add = ip;
 
-        }
-       
-    std::string getNickname() { return Nickname; }
-    void setNickname(std::string nick) { Nickname = nick; }
-    std::string getUsername() { return Username; }
-    void setUsername(std::string user) { Username = user; }
-    std::string getPassword() { return Password; }
-    void setPassword(std::string pass) { Password = pass; }
-    bool hasPasswordReceived() { return hasPassword; }
-    bool hasNicknameReceived() { return hasNickname; }
-    bool hasUsernameReceived() { return hasUsername; }
-};
-
-class Server{
-
-    private:
-    std::vector<Client> clients;
-    
-    
-    int fd_Server;
-    //static bool signal;
-    std::vector<struct pollfd>fds;
-    public:
-    int port;
-    int count;
-    std::string pass;
-        Server(){
-            fd_Server = -1;
-            count = 0;
-        }
-    int be_ready_for_connection();
-    void AcceptNewConnetinClient();
-    void ReceiveNewData(int fd);
-    void ClearClients(int fd);
-    void sendToClient(int fd, const std::string& message);
-    void parseClientInput(int fd, const std::string& data);
-};
 
 void Server::sendToClient(int fd, const std::string& message) {
     send(fd, message.c_str(), message.size(), 0);
@@ -194,8 +138,8 @@ int Server::be_ready_for_connection()
     add.sin_family=AF_INET;
     add.sin_port=htons(this->port);
    this->fd_Server = socket(AF_INET,SOCK_STREAM,0);
-   if( this->fd_Server==-1)
-    throw(std::runtime_error("failed to create socket"));
+//    if( this->fd_Server==-1)
+//     throw(std::runtime_error("failed to create socket"));
 
     //active non_blocking socket
     int en =1;
@@ -259,7 +203,8 @@ void Server::parseClientInput(int fd, const std::string& data) {
         std::string command;
         linestream >> command;  // Read the command from the line
 
-        for (auto& client : clients) {
+        for (size_t i = 0; i < clients.size(); ++i) {
+             Client& client = clients[i];
             if (client.getFd() == fd) {
                 if (command == "CAP")
                 {
@@ -270,6 +215,7 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     std::string pass;
                     linestream >> pass;  // Read the password
                     client.setPassword(pass);
+                    std::cout<<"my password"<<pass<<std::endl;
                     count =1;
 
                     // Prompt for nickname after receiving password
@@ -279,6 +225,7 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     std::string nick;
                     linestream >> nick;  // Read the nickname
                     client.setNickname(nick);
+                   std::cout<<"my nick : "<<nick<<std::endl;
 
                     // Prompt for username after receiving nickname
                     std::string usernamePrompt = "Please enter your username:\r\n";
@@ -288,6 +235,7 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     std::string user, mode, unused, realname;
              
                     client.setUsername(user);
+                    std::cout<<"my User : "<<user<<std::endl;
                     // client.setRealname(realname);
 
                     // Client setup is complete, you can now proceed with further handling
@@ -338,7 +286,7 @@ int main(int ac,char **av)
     }
     
     Server s;
-    s.port=atoi(av[1]);
+    s.port=std::atoi(av[1]);
     s.pass=av[2];
     s.be_ready_for_connection();
 }
