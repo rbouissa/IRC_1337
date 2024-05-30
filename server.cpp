@@ -17,6 +17,9 @@ class Client{
     std::string Nickname;
     std::string Username;
     std::string Password;
+      bool hasPassword;
+    bool hasNickname;
+    bool hasUsername;
     public:
         int getFd()
         {
@@ -38,9 +41,13 @@ class Client{
     void setUsername(std::string user) { Username = user; }
     std::string getPassword() { return Password; }
     void setPassword(std::string pass) { Password = pass; }
+    bool hasPasswordReceived() { return hasPassword; }
+    bool hasNicknameReceived() { return hasNickname; }
+    bool hasUsernameReceived() { return hasUsername; }
 };
 
 class Server{
+
     private:
     std::vector<Client> clients;
     
@@ -50,9 +57,11 @@ class Server{
     std::vector<struct pollfd>fds;
     public:
     int port;
+    int count;
     std::string pass;
         Server(){
             fd_Server = -1;
+            count = 0;
         }
     int be_ready_for_connection();
     void AcceptNewConnetinClient();
@@ -66,58 +75,63 @@ void Server::sendToClient(int fd, const std::string& message) {
     send(fd, message.c_str(), message.size(), 0);
 }
 
-void Server::parseClientInput(int fd, const std::string& data) {
-    std::istringstream stream(data);
-    std::string line;
-    while (std::getline(stream, line)) {
-        std::istringstream linestream(line);
-        std::string command;
-        linestream >> command;
 
-        if (command == "PASS") {
-            std::string pass;
-            linestream >> pass;
+//for the hexchat
+// void Server::parseClientInput(int fd, const std::string& data) {
+//     std::istringstream stream(data);
+//     std::string line;
+//     while (std::getline(stream, line)) {
+//         std::istringstream linestream(line);
+//         std::string command;
+//         linestream >> command;
 
-            // Find the client and set the password
-            for (auto& client : clients) {
-                if (client.getFd() == fd) {
-                    client.setPassword(pass);
-                    std::cout<<"our password "<<pass<<std::endl;
-                    break;
-                }
-            }
-        } else if (command == "NICK") {
-            std::string nick;
-            linestream >> nick;
+//         if (command == "PASS") {
+//             std::string pass;
+//             linestream >> pass;
 
-            // Find the client and set the nickname
-            for (auto& client : clients) {
-                if (client.getFd() == fd) {
-                    client.setNickname(nick);
-                    std::cout<<"our Nickname "<<nick<<std::endl;
-                    break;
-                }
-            }
-        } else if (command == "USER") {
-            std::string user, mode, unused, realname;
-            linestream >> user >> mode >> unused;
-            std::getline(linestream, realname);
-            if (!realname.empty() && realname[0] == ':') {
-                realname = realname.substr(1); // Remove the leading colon
-            }
+//             // Find the client and set the password
+//             for (auto& client : clients) {
+//                 if (client.getFd() == fd) {
+//                     client.setPassword(pass);
+//                     std::cout<<"our password "<<pass<<std::endl;
+//                     break;
+//                 }
+//             }
+//         } else if (command == "NICK") {
+//             std::string nick;
+//             linestream >> nick;
 
-            // Find the client and set the username and realname
-            for (auto& client : clients) {
-                if (client.getFd() == fd) {
-                    client.setUsername(user);
-                    std::cout<<"our Username "<<user<<std::endl;
-                   // client.setRealname(realname);
-                    break;
-                }
-            }
-        }
-    }
-}
+//             // Find the client and set the nickname
+//             for (auto& client : clients) {
+//                 if (client.getFd() == fd) {
+//                     client.setNickname(nick);
+//                     std::cout<<"our Nickname "<<nick<<std::endl;
+//                     break;
+//                 }
+//             }
+//         } else if (command == "USER") {
+//             std::string user, mode, unused, realname;
+//             linestream >> user >> mode >> unused;
+//             std::getline(linestream, realname);
+//             if (!realname.empty() && realname[0] == ':') {
+//                 realname = realname.substr(1); // Remove the leading colon
+//             }
+
+//             // Find the client and set the username and realname
+//             for (auto& client : clients) {
+//                 if (client.getFd() == fd) {
+//                     client.setUsername(user);
+//                     std::cout<<"our Username "<<user<<std::endl;
+//                    // client.setRealname(realname);
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
+
 
 void Server::AcceptNewConnetinClient(){
     Client new_client;
@@ -137,7 +151,7 @@ void Server::AcceptNewConnetinClient(){
 
  std::cout <<"client connected seccefully" << std::endl;
  // Send IRC welcome messages
-    std::string welcomeMsg = ":myserver 001 " + std::string(inet_ntoa(client_add.sin_addr)) + " :Welcome to the IRC server\r\n";
+    std::string welcomeMsg = ":myserver 001 " + new_client.getNickname()  + " :Welcome to the IRC server\r\n";
     std::string yourHostMsg = ":myserver 002 " + std::string(inet_ntoa(client_add.sin_addr)) + " :Your host is myserver\r\n";
     std::string createdMsg = ":myserver 003 " + std::string(inet_ntoa(client_add.sin_addr)) + " :This server was created just now\r\n";
     std::string myInfoMsg = ":myserver 004 " + std::string(inet_ntoa(client_add.sin_addr)) + " myserver v1.0 i\r\n";
@@ -167,8 +181,8 @@ void Server::ReceiveNewData(int fd)
 	else{ 
 		buff[bytes] = '\0';
         std::string data(buff);
+        
         parseClientInput(fd, data);
-
 		std::cout << "Client <" << fd_Server << "> Data: "  << buff;
 	}
 }
@@ -228,6 +242,63 @@ int Server::be_ready_for_connection()
     }
     close(this->fd_Server);
 }
+
+
+
+
+
+
+
+
+
+void Server::parseClientInput(int fd, const std::string& data) {
+    std::istringstream stream(data);  // Create an input string stream from the data string
+    std::string line;
+    while (std::getline(stream, line)) {  // Read each line from the stream
+        std::istringstream linestream(line);  // Create an input string stream from the line
+        std::string command;
+        linestream >> command;  // Read the command from the line
+
+        for (auto& client : clients) {
+            if (client.getFd() == fd) {
+                if (command == "CAP")
+                {
+                    std::string pass = "Please enter your password:\r\n";
+                    send(fd, pass.c_str(), pass.size(), 0);
+                }
+                if (!client.hasPasswordReceived() && command == "PASS" && count ==0) {
+                    std::string pass;
+                    linestream >> pass;  // Read the password
+                    client.setPassword(pass);
+                    count =1;
+
+                    // Prompt for nickname after receiving password
+                    std::string nicknamePrompt = "Please enter your nickname:\r\n";
+                    send(fd, nicknamePrompt.c_str(), nicknamePrompt.size(), 0);
+                } else if (client.hasPasswordReceived() && !client.hasNicknameReceived() && command == "NICK"&&count ==1) {
+                    std::string nick;
+                    linestream >> nick;  // Read the nickname
+                    client.setNickname(nick);
+
+                    // Prompt for username after receiving nickname
+                    std::string usernamePrompt = "Please enter your username:\r\n";
+                    send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
+                    count=2;
+                } else if (client.hasPasswordReceived() && client.hasNicknameReceived() && !client.hasUsernameReceived() && command == "USER"&&count ==2) {
+                    std::string user, mode, unused, realname;
+             
+                    client.setUsername(user);
+                    // client.setRealname(realname);
+
+                    // Client setup is complete, you can now proceed with further handling
+                    std::string welcomeMessage = ":myserver 001 " + client.getNickname()  + " :Welcome to the IRC server\r\n";
+                    send(fd, welcomeMessage.c_str(), welcomeMessage.size(), 0);
+                }
+                }
+                break;
+            }
+        }}
+ 
 
 
 
