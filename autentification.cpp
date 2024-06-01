@@ -13,12 +13,15 @@
 #include <cstdlib>
 
 
-
-
 void Server::sendToClient(int fd, const std::string& message) {
     send(fd, message.c_str(), message.size(), 0);
 }
 
+std::string colorCode(const std::string& message, int color) {
+    std::stringstream ss;
+    ss << "\x03" << color << message << "\x03";
+    return ss.str();
+}
 
 void Server::parseClientInput(int fd, const std::string& data) {
     std::istringstream stream(data);  // Create an input string stream from the data string
@@ -27,29 +30,36 @@ void Server::parseClientInput(int fd, const std::string& data) {
         std::istringstream linestream(line);  // Create an input string stream from the line
         std::string command;
         linestream >> command;  // Read the command from the line
-if(command=="quit")
-{
-    std::cout  << "Client <" << fd << "> Disconnected" << std::endl;
-	
+    if(command=="quit")
+    {
+        std::cout  <<RED<< "Client <" << fd << "> Disconnected" << std::endl;
 		close(fd);
-}
+    }
         for (size_t i = 0; i < clients.size(); ++i) {
              Client& client = clients[i];
             if (client.getFd() == fd) {
                 if (command == "CAP")
                 {
-                    std::string pass = "Please enter your password:\r\n";
-                    send(fd, pass.c_str(), pass.size(), 0);
+                    std::string passe = colorCode("Please enter your password:\r\n",3);
+                    send(fd, passe.c_str(), passe.size(), 0);
                 }
                 if (!client.hasPasswordReceived() && command == "PASS" && count ==0) {
-                    std::string pass;
-                    linestream >> pass;  // Read the password
-                    client.setPassword(pass);
-                    std::cout<<"my password"<<pass<<std::endl;
+                    std::string passe;
+                    linestream >> passe;  // Read the password
+                    if(passe!=pass)
+                    {
+                        std::string pass_err=colorCode(ERR_PASSWDMISMATCH(),5);
+                        std::string passe = colorCode("Please enter your password \r\n",3);
+                        send(fd,pass_err.c_str(),pass_err.size(),0);
+                        send(fd, passe.c_str(), passe.size(), 0);
+                        continue;
+                    }
+                        client.setPassword(passe);
+                    std::cout<<"my password"<<passe<<std::endl;
                     count =1;
 
                     // Prompt for nickname after receiving password
-                    std::string nicknamePrompt = "Please enter your nickname:\r\n";
+                    std::string nicknamePrompt = colorCode("Please enter your nickname:\r\n",3);
                     send(fd, nicknamePrompt.c_str(), nicknamePrompt.size(), 0);
                 } else if (client.hasPasswordReceived() && !client.hasNicknameReceived() && command == "NICK"&&count ==1) {
                     std::string nick;
@@ -58,7 +68,7 @@ if(command=="quit")
                    std::cout<<"my nick : "<<nick<<std::endl;
 
                     // Prompt for username after receiving nickname
-                    std::string usernamePrompt = "Please enter your username:\r\n";
+                    std::string usernamePrompt = colorCode("Please enter your username:\r\n",3);
                     send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
                     count=2;
                 } else if (client.hasPasswordReceived() && client.hasNicknameReceived() && !client.hasUsernameReceived() && command == "USER"&&count ==2) {
@@ -68,15 +78,15 @@ if(command=="quit")
                     std::cout<<"my User : "<<user<<std::endl;
 
                     // Client setup is complete, you can now proceed with further handling
-                    std::string welcomeMessage = ":myserver 001 " + client.getNickname()  + " :Welcome to the IRC server\r\n";
-                    std::string yourHostMsg = ":myserver 002 " + client.getNickname() + " :Your host is myserver\r\n";
-                    std::string createdMsg = ":myserver 003 " + client.getNickname()+ " :This server was created just now\r\n";
-                     std::string myInfoMsg = ":myserver 004 " + client.getNickname()+ " myserver v1.0 i\r\n";
+                    std::string welcomeMessage =colorCode(":myserver 001 " + client.getNickname()  + " :Welcome to the IRC server\r\n",6);
+                    std::string yourHostMsg = colorCode(":myserver 002 " + client.getNickname() + " :Your host is myserver\r\n",6);
+                    std::string createdMsg = colorCode(":myserver 003 " + client.getNickname()+ " :This server was created just now\r\n",6);
+                     std::string myInfoMsg = colorCode(":myserver 004 " + client.getNickname()+ " myserver v1.0 i\r\n",6);
   
                     send(fd, welcomeMessage.c_str(), welcomeMessage.size(), 0);
-                    send(fd, yourHostMsg.c_str(), welcomeMessage.size(), 0);
-                    send(fd, createdMsg.c_str(), welcomeMessage.size(), 0);
-                    send(fd, myInfoMsg.c_str(), welcomeMessage.size(), 0);
+                    send(fd, yourHostMsg.c_str(), yourHostMsg.size(), 0);
+                    send(fd, createdMsg.c_str(), createdMsg.size(), 0);
+                    send(fd, myInfoMsg.c_str(), myInfoMsg.size(), 0);
                 }
                 }
                 break;

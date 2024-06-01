@@ -8,7 +8,7 @@ void Server::AcceptNewConnetinClient(){
     socklen_t length = sizeof(client_add);
     int accept_cl = accept(fd_Server,(sockaddr *)&(client_add),&length);
      if (accept_cl == -1)
-  {std::cout << "client cannot connect" << std::endl; return;}
+  {std::cout <<RED<< "client cannot connect" << std::endl; return;}
     clientPoll.fd=accept_cl;
     clientPoll.events=POLLIN;
     clientPoll.revents=0;
@@ -17,7 +17,7 @@ void Server::AcceptNewConnetinClient(){
  clients.push_back(new_client); //-> add the client to the vector of clients
  fds.push_back(clientPoll); //-> add the client socket to the pollfd
 
- std::cout <<"client connected seccefully" << std::endl;
+ std::cout <<GRE<<"client connected seccefully" <<WHI<< std::endl;
  // Send IRC welcome messages
   
  }
@@ -33,7 +33,7 @@ void Server::ReceiveNewData(int fd)
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); 
     //if the client disconnected
 	if(bytes <= 0){ 
-		std::cout  << "Client <" << fd << "> Disconnected" << std::endl;
+		std::cout  <<RED<< "Client <" << fd << "> Disconnected" << std::endl;
 	
 		close(fd);
 	}
@@ -67,20 +67,20 @@ int Server::be_ready_for_connection()
         throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
       // Bind socket to address and port
     if (bind( this->fd_Server, (struct sockaddr *)&add, sizeof(add)) < 0) {
-        std::cerr << "Bind failed" << std::endl;
+        std::cerr <<RED<< "Bind failed" << std::endl;
         return 1;
     }   
     // Listen for incoming connections
     if (listen( this->fd_Server, SOMAXCONN) == -1) {
-        std::cerr << "Listen failed" << std::endl;
+        std::cerr <<RED<< "Listen failed" << std::endl;
         return 1;
     }
     NewPoll.fd =  this->fd_Server; //-> add the server socket to the pollfd
     NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
     NewPoll.revents = 0; //-> set the revents to 0
     fds.push_back(NewPoll); //-> add the server socket to the pollfd
-    std::cout<<"server"<< this->fd_Server<<" connected and ready for receiving data"<<std::endl;
-    std::cout<<"Waiting to accept conection"<<std::endl;
+    std::cout<<GRE<<"server <"<< this->fd_Server<<"> connected and ready for receiving data"<<std::endl;
+    std::cout<<YEL<<"Waiting to accept conection"<<std::endl;
     while(1)
     {
         if(poll(&fds[0],fds.size(),-1) ==-1)
@@ -91,11 +91,10 @@ int Server::be_ready_for_connection()
             {
                 if(fds[i].fd ==  this->fd_Server)
                 {
-                    std::cout<<"accepting new client"<<std::endl;
+                    std::cout<<GRE<<"accepting new client"<<WHI<<std::endl;
                     AcceptNewConnetinClient();
                 }
-                else{
-                     
+                else{  
                     ReceiveNewData(fds[i].fd);
                     //std::cout<<"receive a new data from a registred client"<<std::endl;
                 }
@@ -103,7 +102,6 @@ int Server::be_ready_for_connection()
         }
     }
     close(this->fd_Server);
-  
 }
 
 

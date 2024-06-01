@@ -1,5 +1,9 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
+#define RED "\e[1;31m" //-> for red color
+#define WHI "\e[0;37m" //-> for white color
+#define GRE "\e[1;32m" //-> for green color
+#define YEL "\e[1;33m" //-> for yellow color
 #include <iostream>
 #include <vector> //-> for vector
 #include <sys/socket.h> //-> for socket()
@@ -13,6 +17,7 @@
 #include<sstream>
 #include"client.hpp"
 #include <cstdlib>
+#include"headrs_irc.hpp"
 
 
 class Server{
