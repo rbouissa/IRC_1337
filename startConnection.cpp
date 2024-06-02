@@ -69,7 +69,7 @@ int Server::be_ready_for_connection()
     if (bind( this->fd_Server, (struct sockaddr *)&add, sizeof(add)) < 0) {
         std::cerr <<RED<< "Bind failed" << std::endl;
         return 1;
-    }   
+    }    
     // Listen for incoming connections
     if (listen( this->fd_Server, SOMAXCONN) == -1) {
         std::cerr <<RED<< "Listen failed" << std::endl;

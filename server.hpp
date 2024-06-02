@@ -43,5 +43,9 @@ class Server{
     void ClearClients(int fd);
     void sendToClient(int fd, const std::string& message);
     void parseClientInput(int fd, const std::string& data);
+    bool prsNickname(std::string nickname,int fd);
+    bool validateNickname(std::string nickname);
+    std::string colorCode(const std::string& message, int color);
 };
+
 #endif

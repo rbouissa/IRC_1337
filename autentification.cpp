@@ -17,11 +17,7 @@ void Server::sendToClient(int fd, const std::string& message) {
     send(fd, message.c_str(), message.size(), 0);
 }
 
-std::string colorCode(const std::string& message, int color) {
-    std::stringstream ss;
-    ss << "\x03" << color << message << "\x03";
-    return ss.str();
-}
+
 
 void Server::parseClientInput(int fd, const std::string& data) {
     std::istringstream stream(data);  // Create an input string stream from the data string
@@ -64,8 +60,10 @@ void Server::parseClientInput(int fd, const std::string& data) {
                 } else if (client.hasPasswordReceived() && !client.hasNicknameReceived() && command == "NICK"&&count ==1) {
                     std::string nick;
                     linestream >> nick;  // Read the nickname
+                    if(!prsNickname(nick,fd))
+                        continue;
                     client.setNickname(nick);
-                   std::cout<<"my nick : "<<nick<<std::endl;
+                    std::cout<<"my nick : "<<nick<<std::endl;
 
                     // Prompt for username after receiving nickname
                     std::string usernamePrompt = colorCode("Please enter your username:\r\n",3);
@@ -92,57 +90,3 @@ void Server::parseClientInput(int fd, const std::string& data) {
                 break;
             }
         }}
-
-//for the hexchat
-// void Server::parseClientInput(int fd, const std::string& data) {
-//     std::istringstream stream(data);
-//     std::string line;
-//     while (std::getline(stream, line)) {
-//         std::istringstream linestream(line);
-//         std::string command;
-//         linestream >> command;
-
-//         if (command == "PASS") {
-//             std::string pass;
-//             linestream >> pass;
-
-//             // Find the client and set the password
-//             for (auto& client : clients) {
-//                 if (client.getFd() == fd) {
-//                     client.setPassword(pass);
-//                     std::cout<<"our password "<<pass<<std::endl;
-//                     break;
-//                 }
-//             }
-//         } else if (command == "NICK") {
-//             std::string nick;
-//             linestream >> nick;
-
-//             // Find the client and set the nickname
-//             for (auto& client : clients) {
-//                 if (client.getFd() == fd) {
-//                     client.setNickname(nick);
-//                     std::cout<<"our Nickname "<<nick<<std::endl;
-//                     break;
-//                 }
-//             }
-//         } else if (command == "USER") {
-//             std::string user, mode, unused, realname;
-//             linestream >> user >> mode >> unused;
-//             std::getline(linestream, realname);
-//             if (!realname.empty() && realname[0] == ':') {
-//                 realname = realname.substr(1); // Remove the leading colon
-//             }
-
-//             // Find the client and set the username and realname
-//             for (auto& client : clients) {
-//                 if (client.getFd() == fd) {
-//                     client.setUsername(user);
-//                     std::cout<<"our Username "<<user<<std::endl;
-//                    // client.setRealname(realname);
-//                     break;
-//                 }
-//             }
-//         }
-//     }
-// }
