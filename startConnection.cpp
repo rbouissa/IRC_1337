@@ -45,7 +45,7 @@ void Server::ReceiveNewData(int fd)
         std::string data(buff);
         
         parseClientInput(fd, data);
-		std::cout << "Client <" << fd_Server << "> Data: "  << buff;
+		std::cout <<ORANGE<< "Client <" <<RESET<< fd_Server <<ORANGE<< "> Data: "  << buff<<RESET;
 	}
 }
 
@@ -67,19 +67,19 @@ int Server::be_ready_for_connection()
         throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
       // Bind socket to address and port
     if (bind( this->fd_Server, (struct sockaddr *)&add, sizeof(add)) < 0) {
-        std::cerr <<RED<< "Bind failed" << std::endl;
+        std::cerr <<RED<< "Bind failed" << RESET<<std::endl;
         return 1;
     }    
     // Listen for incoming connections
     if (listen( this->fd_Server, SOMAXCONN) == -1) {
-        std::cerr <<RED<< "Listen failed" << std::endl;
+        std::cerr <<RED<< "Listen failed" << RESET<<std::endl;
         return 1;
     }
     NewPoll.fd =  this->fd_Server; //-> add the server socket to the pollfd
     NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
     NewPoll.revents = 0; //-> set the revents to 0
     fds.push_back(NewPoll); //-> add the server socket to the pollfd
-    std::cout<<GRE<<"server <"<< this->fd_Server<<"> connected and ready for receiving data"<<std::endl;
+    std::cout<<GRE<<"server <"<< this->fd_Server<<">"<<GRE<<" and ready for receiving data"<<RESET<<std::endl;
     std::cout<<YEL<<"Waiting to accept conection"<<std::endl;
     while(1)
     {
@@ -94,10 +94,8 @@ int Server::be_ready_for_connection()
                     std::cout<<GRE<<"accepting new client"<<WHI<<std::endl;
                     AcceptNewConnetinClient();
                 }
-                else{  
+                else
                     ReceiveNewData(fds[i].fd);
-                    //std::cout<<"receive a new data from a registred client"<<std::endl;
-                }
             }
         }
     }

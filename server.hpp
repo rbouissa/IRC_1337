@@ -4,6 +4,8 @@
 #define WHI "\e[0;37m" //-> for white color
 #define GRE "\e[1;32m" //-> for green color
 #define YEL "\e[1;33m" //-> for yellow color
+#define ORANGE "\033[38;2;255;165;0m" //->orange
+#define RESET "\033[0m"//->reset color
 #include <iostream>
 #include <vector> //-> for vector
 #include <sys/socket.h> //-> for socket()
@@ -41,11 +43,11 @@ class Server{
     void AcceptNewConnetinClient();
     void ReceiveNewData(int fd);
     void ClearClients(int fd);
-    void sendToClient(int fd, const std::string& message);
     void parseClientInput(int fd, const std::string& data);
     bool prsNickname(std::string nickname,int fd);
     bool validateNickname(std::string nickname);
     std::string colorCode(const std::string& message, int color);
+    void send_welcome_message(int fd,Client client);
 };
 
 #endif

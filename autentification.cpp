@@ -12,13 +12,6 @@
 #include"server.hpp"
 #include <cstdlib>
 
-
-void Server::sendToClient(int fd, const std::string& message) {
-    send(fd, message.c_str(), message.size(), 0);
-}
-
-
-
 void Server::parseClientInput(int fd, const std::string& data) {
     std::istringstream stream(data);  // Create an input string stream from the data string
     std::string line;
@@ -51,9 +44,7 @@ void Server::parseClientInput(int fd, const std::string& data) {
                         continue;
                     }
                         client.setPassword(passe);
-                    std::cout<<"my password"<<passe<<std::endl;
                     count =1;
-
                     // Prompt for nickname after receiving password
                     std::string nicknamePrompt = colorCode("Please enter your nickname:\r\n",3);
                     send(fd, nicknamePrompt.c_str(), nicknamePrompt.size(), 0);
@@ -63,30 +54,31 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     if(!prsNickname(nick,fd))
                         continue;
                     client.setNickname(nick);
-                    std::cout<<"my nick : "<<nick<<std::endl;
-
                     // Prompt for username after receiving nickname
                     std::string usernamePrompt = colorCode("Please enter your username:\r\n",3);
                     send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
                     count=2;
                 } else if (client.hasPasswordReceived() && client.hasNicknameReceived() && !client.hasUsernameReceived() && command == "USER"&&count ==2) {
                     std::string user, mode, unused, realname;
-             
                     client.setUsername(user);
-                    std::cout<<"my User : "<<user<<std::endl;
 
+                    send_welcome_message(fd,client);
                     // Client setup is complete, you can now proceed with further handling
-                    std::string welcomeMessage =colorCode(":myserver 001 " + client.getNickname()  + " :Welcome to the IRC server\r\n",6);
-                    std::string yourHostMsg = colorCode(":myserver 002 " + client.getNickname() + " :Your host is myserver\r\n",6);
-                    std::string createdMsg = colorCode(":myserver 003 " + client.getNickname()+ " :This server was created just now\r\n",6);
-                     std::string myInfoMsg = colorCode(":myserver 004 " + client.getNickname()+ " myserver v1.0 i\r\n",6);
-  
-                    send(fd, welcomeMessage.c_str(), welcomeMessage.size(), 0);
-                    send(fd, yourHostMsg.c_str(), yourHostMsg.size(), 0);
-                    send(fd, createdMsg.c_str(), createdMsg.size(), 0);
-                    send(fd, myInfoMsg.c_str(), myInfoMsg.size(), 0);
                 }
                 }
                 break;
             }
         }}
+
+void Server::send_welcome_message(int fd,Client client)
+{
+    std::string welcomeMessage =colorCode(":myserver 001 " + client.getNickname()  + " :Welcome to the IRC server\r\n",6);
+    std::string yourHostMsg = colorCode(":myserver 002 " + client.getNickname() + " :Your host is myserver\r\n",6);
+    std::string createdMsg = colorCode(":myserver 003 " + client.getNickname()+ " :This server was created just now\r\n",6);
+    std::string myInfoMsg = colorCode(":myserver 004 " + client.getNickname()+ " myserver v1.0 i\r\n",6);
+  
+    send(fd, welcomeMessage.c_str(), welcomeMessage.size(), 0);
+    send(fd, yourHostMsg.c_str(), yourHostMsg.size(), 0);
+    send(fd, createdMsg.c_str(), createdMsg.size(), 0);
+    send(fd, myInfoMsg.c_str(), myInfoMsg.size(), 0);
+}
