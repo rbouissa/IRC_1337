@@ -43,7 +43,7 @@ void Server::parseClientInput(int fd, const std::string& data) {
                         send(fd, passe.c_str(), passe.size(), 0);
                         continue;
                     }
-                        client.setPassword(passe);
+                    client.setPassword(passe);
                     count =1;
                     // Prompt for nickname after receiving password
                     std::string nicknamePrompt = colorCode("Please enter your nickname:\r\n",3);
@@ -59,11 +59,33 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
                     count=2;
                 } else if (client.hasPasswordReceived() && client.hasNicknameReceived() && !client.hasUsernameReceived() && command == "USER"&&count ==2) {
-                    std::string user, mode, unused, realname;
-                    client.setUsername(user);
-
+                    std::istringstream iss(command);
+                     std::string comd, username, realname;
+                     std::string unusedInt;
+                    std::string unusedChar; 
+    // Extract parts of the input string
+                iss >> comd >> username >> unusedInt >> unusedChar;
+                    std::getline(iss, realname);
+    // Trim leading whitespace from realname
+                 size_t pos = realname.find_first_not_of(" ");
+                    if (pos != std::string::npos) {
+                        realname = realname.substr(pos);
+                    }
+                    std::cout<<"---->"<<realname<<std::endl;
+                    std::cout<<"--====>"<<username<<std::endl;
+                    // Remove leading colon from realname
+                    if(username.empty() || unusedInt.empty() || unusedChar.empty() || realname.empty())
+                    {
+                        std::string pass_err=colorCode(ERR_NEEDMOREPARAMS(command),5);
+                        send(fd,pass_err.c_str(),pass_err.size(),0);
+                        continue;
+                    }
+                    // if (!realname.empty() && realname[0] == ':') {
+                    //     realname = realname.substr(1);
+                    // }
+                    client.setUsername(username);
+                    client.setRealname(realname);
                     send_welcome_message(fd,client);
-                    // Client setup is complete, you can now proceed with further handling
                 }
                 }
                 break;

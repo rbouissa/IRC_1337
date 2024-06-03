@@ -20,7 +20,16 @@
 #include"client.hpp"
 #include <cstdlib>
 #include"headrs_irc.hpp"
+struct request {
 
+	std::string cmd;
+	std::vector<std::string> arg;
+
+	request () {
+
+		cmd = "";
+	}
+};
 
 class Server{
 
