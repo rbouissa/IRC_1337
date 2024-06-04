@@ -59,30 +59,38 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
                     count=2;
                 } else if (client.hasPasswordReceived() && client.hasNicknameReceived() && !client.hasUsernameReceived() && command == "USER"&&count ==2) {
-                    std::istringstream iss(command);
+                    std::istringstream iss(line);
                      std::string comd, username, realname;
                      std::string unusedInt;
-                    std::string unusedChar; 
-    // Extract parts of the input string
-                iss >> comd >> username >> unusedInt >> unusedChar;
-                    std::getline(iss, realname);
-    // Trim leading whitespace from realname
-                 size_t pos = realname.find_first_not_of(" ");
-                    if (pos != std::string::npos) {
-                        realname = realname.substr(pos);
+                    std::string unusedChar;
+                    int i = 0;
+                for (std::string each; std::getline(iss, each, ' ');){
+                    if(i==1)
+                        username = each;
+                    else if(i == 2)
+                        unusedInt= each;
+                    else if(i == 3)
+                        unusedChar = each;
+                    else if(i==4)
+                        realname = each;
+                    i++;
                     }
-                    std::cout<<"---->"<<realname<<std::endl;
-                    std::cout<<"--====>"<<username<<std::endl;
-                    // Remove leading colon from realname
-                    if(username.empty() || unusedInt.empty() || unusedChar.empty() || realname.empty())
+                    if(unusedInt!="0"&&unusedChar!="*")
                     {
                         std::string pass_err=colorCode(ERR_NEEDMOREPARAMS(command),5);
                         send(fd,pass_err.c_str(),pass_err.size(),0);
                         continue;
                     }
-                    // if (!realname.empty() && realname[0] == ':') {
-                    //     realname = realname.substr(1);
-                    // }
+                    // Remove leading colon from realname
+                    if(i != 5)
+                    {
+                        std::string pass_err=colorCode(ERR_NEEDMOREPARAMS(command),5);
+                        send(fd,pass_err.c_str(),pass_err.size(),0);
+                        continue;
+                    }
+                    if (!realname.empty() && realname[0] == ':') {
+                        realname = realname.substr(1);
+                    }
                     client.setUsername(username);
                     client.setRealname(realname);
                     send_welcome_message(fd,client);

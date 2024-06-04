@@ -40,7 +40,7 @@ bool Server::prsNickname(std::string nickname,int fd)
         else if(nickname == it->getNickname())
         {
             std::string pass_err=colorCode(ERR_NICKNAMEINUSE(nickname),5);
-           send(fd,pass_err.c_str(),pass_err.size(),0);
+            send(fd,pass_err.c_str(),pass_err.size(),0);
             return false;
         }
         else if(!validateNickname(nickname))
