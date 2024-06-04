@@ -46,7 +46,7 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     client.setPassword(passe);
                     count =1;
                     // Prompt for nickname after receiving password
-                    std::string nicknamePrompt = colorCode("Please enter your nickname:\r\n",3);
+                    std::string nicknamePrompt = colorCode("please enter the nickname:\r\n",3);
                     send(fd, nicknamePrompt.c_str(), nicknamePrompt.size(), 0);
                 } else if (client.hasPasswordReceived() && !client.hasNicknameReceived() && command == "NICK"&&count ==1) {
                     std::string nick;
@@ -91,6 +91,8 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     if (!realname.empty() && realname[0] == ':') {
                         realname = realname.substr(1);
                     }
+                    else
+                        continue;
                     client.setUsername(username);
                     client.setRealname(realname);
                     send_welcome_message(fd,client);
