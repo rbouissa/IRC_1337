@@ -20,6 +20,7 @@
 #include"client.hpp"
 #include <cstdlib>
 #include"headrs_irc.hpp"
+#include <csignal>
 struct request {
 
 	std::string cmd;
@@ -36,7 +37,7 @@ class Server{
     private:
     std::vector<Client> clients;
     
-    
+    static bool Signal;
     int fd_Server;
     //static bool signal;
     std::vector<struct pollfd>fds;
@@ -48,7 +49,7 @@ class Server{
             fd_Server = -1;
             count = 0;
         }
-    int be_ready_for_connection();
+    void be_ready_for_connection();
     void AcceptNewConnetinClient();
     void ReceiveNewData(int fd);
     void ClearClients(int fd);
@@ -57,6 +58,9 @@ class Server{
     bool validateNickname(std::string nickname);
     std::string colorCode(const std::string& message, int color);
     void send_welcome_message(int fd,Client client);
+    static void SignalHandler(int signum);
+    void CloseFds();
+
 };
 
 #endif

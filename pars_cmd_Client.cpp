@@ -33,19 +33,19 @@ bool Server::prsNickname(std::string nickname,int fd)
     {
         if(nickname.empty())
         {
-            std::string pass_err=colorCode(ERR_ERRONEUSNICKNAME(nickname),5);
+            std::string pass_err=ERR_ERRONEUSNICKNAME(nickname);
             send(fd,pass_err.c_str(),pass_err.size(),0);
             return false;
         }
         else if(nickname == it->getNickname())
         {
-            std::string pass_err=colorCode(ERR_NICKNAMEINUSE(nickname),5);
+            std::string pass_err=ERR_NICKNAMEINUSE(nickname);
             send(fd,pass_err.c_str(),pass_err.size(),0);
             return false;
         }
         else if(!validateNickname(nickname))
         {
-            std::string pass_err=colorCode(ERR_NICKNAMEINUSE(nickname),5);
+            std::string pass_err=ERR_NICKNAMEINUSE(nickname);
             send(fd,pass_err.c_str(),pass_err.size(),0);
             return false;
         }
