@@ -74,14 +74,14 @@ void Server::parseClientInput(int fd, const std::string& data) {
                         realname = each;
                     i++;
                 }
-                    if(!parsUSer(i,unusedInt,unusedChar,command,fd,realname,username)){
-                        std::string usernamePrompt = "Please enter your username:\r\n";
+                if(!parsUSer(i,unusedInt,unusedChar,command,fd,realname,username)){
+                    std::string usernamePrompt = "Please enter your username:\r\n";
                     send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
-                        continue;
-                    }
-                    client.setUsername(username);
-                    client.setRealname(realname);
-                    send_welcome_message(fd,client);
+                    continue;
+                }
+                client.setUsername(username);
+                client.setRealname(realname);
+                send_welcome_message(fd,client);
                 }
                 }
                 break;

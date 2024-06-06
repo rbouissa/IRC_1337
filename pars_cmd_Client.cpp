@@ -82,6 +82,7 @@ bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::st
     {
         std::string pass_err=":server 462 " + it->getNickname() + " :You may not reregister\r\n";;
         send(fd,pass_err.c_str(),pass_err.size(),0);
+        return false;
     }
     else if(!realname.empty() && realname[0] != ':')
     {
