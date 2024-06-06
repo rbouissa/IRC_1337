@@ -60,6 +60,7 @@ class Server{
     void send_welcome_message(int fd,Client client);
     static void SignalHandler(int signum);
     void CloseFds();
+    bool parsUSer(int i,std::string unusedInt,std::string unusedChar,std::string command,int fd,std::string realname);
 
 };
 

@@ -62,7 +62,8 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     std::string unusedInt;
                     std::string unusedChar;
                     int i = 0;
-                for (std::string each; std::getline(iss, each, ' ');){
+                for (std::string each; std::getline(iss, each, ' ');)
+                {
                     if(i == 1)
                         username = each;
                     else if(i == 2)
@@ -72,24 +73,35 @@ void Server::parseClientInput(int fd, const std::string& data) {
                     else if(i == 4)
                         realname = each;
                     i++;
-                    }
-                    if(unusedInt != "0" && unusedChar != "*")
-                    {
-                        std::string pass_err=ERR_NEEDMOREPARAMS(command);
-                        send(fd,pass_err.c_str(),pass_err.size(),0);
+                }
+                    if(!parsUSer(i,unusedInt,unusedChar,command,fd,realname)){
+                        std::string usernamePrompt = "Please enter your username:\r\n";
+                    send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
                         continue;
                     }
-                    if(i != 5)
-                    {
-                        std::string pass_err=ERR_NEEDMOREPARAMS(command);
-                        send(fd,pass_err.c_str(),pass_err.size(),0);
-                        continue;
-                    }
-                    if (!realname.empty() && realname[0] == ':') {
-                        realname = realname.substr(1);
-                    }
-                    else
-                        continue;
+                    
+                    // if(unusedInt != "0" && unusedChar != "*")
+                    // {
+                    //     std::string pass_err=ERR_NEEDMOREPARAMS(command);
+                    //     send(fd,pass_err.c_str(),pass_err.size(),0);
+                    //     continue;
+                    // }
+                    // if(i != 5)
+                    // {
+                    //     std::string pass_err=ERR_NEEDMOREPARAMS(command);
+                    //     send(fd,pass_err.c_str(),pass_err.size(),0);
+                    //     continue;
+                    // }
+                    // if (!realname.empty() && realname[0] == ':') {
+                    //     realname = realname.substr(1);
+                    // }
+                    // else
+                    // {
+                    //     std::string usernamePrompt = "Please enter your username:\r\n";
+                    // send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
+                    //     continue;
+                    // }
+                   
                     client.setUsername(username);
                     client.setRealname(realname);
                     send_welcome_message(fd,client);
