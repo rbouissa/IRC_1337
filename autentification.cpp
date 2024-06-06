@@ -119,7 +119,7 @@ void Server::send_welcome_message(int fd,Client client)
     std::string createdMsg = ":WEBSERV 003 " + client.getNickname() + " :This server was created just now\r\n";
     std::string myInfoMsg = ":WEBSERV 004 " + client.getNickname() + " WEBSERV v1.0 i\r\n";
 
-// Send each message
+    // Send each message
     send(fd, welcomeMessage.c_str(), welcomeMessage.size(), 0);
     send(fd, yourHostMsg.c_str(), yourHostMsg.size(), 0);
     send(fd, createdMsg.c_str(), createdMsg.size(), 0);

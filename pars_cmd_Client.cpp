@@ -73,9 +73,17 @@ bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::st
         return false;
     }
     else if(realname.empty())
+    {
+        std::string pass_err=ERR_NEEDMOREPARAMS(command);
+        send(fd,pass_err.c_str(),pass_err.size(),0);
         return false;
+    }
     else if(!realname.empty() && realname[0] != ':')
+    {
+        std::string pass_err=ERR_NEEDMOREPARAMS(command);
+        send(fd,pass_err.c_str(),pass_err.size(),0);
         return false;
+    }
     else 
     {
         realname = realname.substr(1);
