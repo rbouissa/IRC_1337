@@ -74,34 +74,11 @@ void Server::parseClientInput(int fd, const std::string& data) {
                         realname = each;
                     i++;
                 }
-                    if(!parsUSer(i,unusedInt,unusedChar,command,fd,realname)){
+                    if(!parsUSer(i,unusedInt,unusedChar,command,fd,realname,username)){
                         std::string usernamePrompt = "Please enter your username:\r\n";
                     send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
                         continue;
                     }
-                    
-                    // if(unusedInt != "0" && unusedChar != "*")
-                    // {
-                    //     std::string pass_err=ERR_NEEDMOREPARAMS(command);
-                    //     send(fd,pass_err.c_str(),pass_err.size(),0);
-                    //     continue;
-                    // }
-                    // if(i != 5)
-                    // {
-                    //     std::string pass_err=ERR_NEEDMOREPARAMS(command);
-                    //     send(fd,pass_err.c_str(),pass_err.size(),0);
-                    //     continue;
-                    // }
-                    // if (!realname.empty() && realname[0] == ':') {
-                    //     realname = realname.substr(1);
-                    // }
-                    // else
-                    // {
-                    //     std::string usernamePrompt = "Please enter your username:\r\n";
-                    // send(fd, usernamePrompt.c_str(), usernamePrompt.size(), 0);
-                    //     continue;
-                    // }
-                   
                     client.setUsername(username);
                     client.setRealname(realname);
                     send_welcome_message(fd,client);

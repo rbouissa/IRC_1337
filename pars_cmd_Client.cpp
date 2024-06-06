@@ -1,5 +1,6 @@
 #include"server.hpp"
 #include"headrs_irc.hpp"
+
 std::string Server:: colorCode(const std::string& message, int color) {
     std::stringstream ss;
     ss << "\x03" << color << message << "\x03";
@@ -55,11 +56,10 @@ bool Server::prsNickname(std::string nickname,int fd)
     return true;
 }
 
-
-
-
-bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::string command,int fd,std::string realname)
+bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::string command,int fd,std::string realname,std::string username)
 {
+    for(std::vector<Client>::iterator it = clients.begin();it != clients.end();++it)
+    {
   if(unusedInt != "0" && unusedChar != "*")
     {
         std::string pass_err=ERR_NEEDMOREPARAMS(command);
@@ -78,6 +78,11 @@ bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::st
         send(fd,pass_err.c_str(),pass_err.size(),0);
         return false;
     }
+    else if(username == it->getUsername())
+    {
+        std::string pass_err=":server 462 " + it->getNickname() + " :You may not reregister\r\n";;
+        send(fd,pass_err.c_str(),pass_err.size(),0);
+    }
     else if(!realname.empty() && realname[0] != ':')
     {
         std::string pass_err=ERR_NEEDMOREPARAMS(command);
@@ -88,5 +93,6 @@ bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::st
     {
         realname = realname.substr(1);
         return true;
+    }
     }
 }
