@@ -29,18 +29,25 @@ void Server::parseClientInput(int fd, const std::string& data) {
             if (client.getFd() == fd) {
                 if (command == "CAP")
                 {
-                    std::string passe = "Please enter your password:\r\n";
-                    send(fd, passe.c_str(), passe.size(), 0);
+                    std::string passe_send = "Please enter your password:\r\n";
+                    send(fd, passe_send.c_str(), passe_send.size(), 0);
                 }
                 if (!client.hasPasswordReceived() && command == "PASS" && count ==0) {
                     std::string passe;
                     linestream >> passe;  // Read the password
-                    if(passe!=pass)
+                    if(passe!=pass ||  passe.empty())
                     {
-                        std::string pass_err=ERR_PASSWDMISMATCH();
-                        std::string passe = "Please enter your password \r\n";
+                        std::string pass_err;
+                        if(passe.empty())
+                        {
+                            std::cout<<"hello \n";
+                             pass_err=ERR_NEEDMOREPARAMS(line);
+                        }
+                        else
+                             pass_err=ERR_PASSWDMISMATCH();
+                        std::string passe_send = "Please enter your password \r\n";
                         send(fd,pass_err.c_str(),pass_err.size(),0);
-                        send(fd, passe.c_str(), passe.size(), 0);
+                        send(fd, passe_send.c_str(), passe_send.size(), 0);
                         continue;
                     }
                     client.setPassword(passe);

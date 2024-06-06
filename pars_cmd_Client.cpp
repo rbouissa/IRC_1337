@@ -34,7 +34,7 @@ bool Server::prsNickname(std::string nickname,int fd)
     {
         if(nickname.empty())
         {
-            std::string pass_err=ERR_ERRONEUSNICKNAME(nickname);
+            std::string pass_err=ERR_NONICKNAMEGIVEN();
             send(fd,pass_err.c_str(),pass_err.size(),0);
             return false;
         }
@@ -46,7 +46,7 @@ bool Server::prsNickname(std::string nickname,int fd)
         }
         else if(!validateNickname(nickname))
         {
-            std::string pass_err=ERR_NICKNAMEINUSE(nickname);
+            std::string pass_err=ERR_ERRONEUSNICKNAME(nickname);
             send(fd,pass_err.c_str(),pass_err.size(),0);
             return false;
         }
@@ -60,7 +60,7 @@ bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::st
 {
     for(std::vector<Client>::iterator it = clients.begin();it != clients.end();++it)
     {
-  if(unusedInt != "0" && unusedChar != "*")
+    if(unusedInt != "0" && unusedChar != "*")
     {
         std::string pass_err=ERR_NEEDMOREPARAMS(command);
         send(fd,pass_err.c_str(),pass_err.size(),0);
@@ -95,5 +95,6 @@ bool Server::parsUSer(int i,std::string unusedInt,std::string unusedChar,std::st
         realname = realname.substr(1);
         return true;
     }
-    }
+}
+  return true;
 }
