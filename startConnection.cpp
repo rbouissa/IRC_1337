@@ -63,16 +63,14 @@ void Server::ReceiveNewData(int fd)
     //if the client disconnected
 	if(bytes <= 0){ 
 		std::cout  <<RED<< "Client <" << fd << "> Disconnected" << std::endl;
-	
 		close(fd);
 	}
 //if not print the data received
 	else{ 
 		buff[bytes] = '\0';
-        // static ch nwebuff += buff;
-        // if ( != std::npos)
         std::string data(buff);
-        std::cout << "buf : " << data << "fin" <<std::endl;
+        int k=0;
+        std::cout<<"----"<<k<<"---"<<fd<<std::endl;
         parseClientInput(fd, data);
 		std::cout <<ORANGE<< "Client <" <<RESET<< fd_Server <<ORANGE<< "> Data: "  << buff<<RESET;
 	}

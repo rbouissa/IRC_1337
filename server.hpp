@@ -43,11 +43,10 @@ class Server{
     std::vector<struct pollfd>fds;
     public:
     int port;
-    int count;
     std::string pass;
         Server(){
             fd_Server = -1;
-            count = 0;
+           
         }
     void be_ready_for_connection();
     void AcceptNewConnetinClient();

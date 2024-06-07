@@ -4,6 +4,7 @@
 
 class Client{
     int fd;
+    
     std::string ip_add;
     std::string Nickname;
     std::string Username;
@@ -13,6 +14,11 @@ class Client{
     bool hasNickname;
     bool hasUsername;
     public:
+    int count;
+    Client(){
+        count =0;
+
+    };
         int getFd()
         {
             return fd;
